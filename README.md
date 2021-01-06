@@ -172,15 +172,107 @@ We can access this functions and classes from another package in this way:
 ```kotlin
 import persons.*
 
-...
+// ...
 ```
 
 To conclude, in Kotlin you can put multiple classes in the same file.
 
 
 
+### Enum
+Enum classes work as in Java, they give a fixed range of values.
+
+```kotlin
+enum class Color(
+    val r: Int, val g: Int, val b: Int
+) {
+    RED(255, 0, 0), ORANGE(255, 165, 0),
+    YELLOW(255, 255, 0), WHITE(255, 255, 255); 
+    // this semicolon in important
+
+    fun findrgb() = r * b * g
+
+}
+```
+In the block we have created some enum constants, that must have 
+the property values set, following the declaration of the Enum class.
+
+##### The _when_ expression
+
+It takes the place of the _switch_ statement. Combined with the Enum 
+class, it can be used to return a value based on the constant one.
+For example:
+
+```kotlin
+fun getNumber(color: Color){
+    when (color){
+        Color.RED -> "red"
+        Color.ORANGE -> "orange"
+        Color.YELLOW -> "yellow"
+    }
+}
+
+fun getifWarm (color: Color){
+    when (color){
+            Color.RED, Color.ORANGE, Color.YELLOW -> "warm"
+        }
+}
+```
+
+_when_ may also have different objects as parameter. 
+In that case, for example:
+```kotlin
+fun mix (color1: Color, color2: Color){
+    when (setOf(color1, color2)){
+        setOf(Color.RED, Color.YELLOW) -> "ORANGE"
+        setOf(Color.YELLOW, Color.ORANGE) -> "DARKER YELLOW"
+        else -> throw Exception("wrong colors")
+    }
+}
+```
+
+_when_ can be used without a parameter, too.
+```kotlin
+fun mixOptimized(c1: Color, c2: Color) =
+    when {
+        (c1 == RED && c2 == YELLOW) ||
+        (c1 == YELLOW && c2 == RED) ->
+            "ORANGE"
+        (c1 == YELLOW && c2 == ORANGE) ||
+        (c1 == ORANGE && c2 == YELLOW) ->
+            "DARKER YELLOW"
+        else -> throw Exception("Dirty color")
+}
+```
+This other version of the previous snippet is more efficient than the previous one,
+and used in case the function is called multiple times: it avoids 
+the creation of multiple _sets_ for the comparison. The drawback is 
+that it's harder to read.
+
+
+### Smart Casts
+
+It is possible to combine type checks and cast. When we check a 
+variable with the **is** keyword in the if clause, consequently the 
+variable assumes the type of the checked type. For example:
+
+```kotlin
+if (e is Int) {
+    println ( e.value ) // here e is of type Int
+}
+```
+Consequently no explicit cast is necessary, and the variable is
+smatly casted to the required type.
+
+Condition when this is possible:
+ - the variable is declared as _val_ i.e. read-only.
  
- 
+In case it is not a _val_ variable, the explicit cast is required,
+and consequently we need:
+```kotlin
+val n = e as Int
+```
+
 
 
 
