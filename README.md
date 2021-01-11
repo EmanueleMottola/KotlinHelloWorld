@@ -330,6 +330,170 @@ case the expression can return automatically a value.
 No other difference from Java.
 
 
+## Collections
+
+- Set creation:
+```kotlin
+val set = hashSetOf(1, 7, 53)
+```
+
+- List creation:
+```kotlin
+val list = arrayListOf(1, 5, 4)
+```
+
+- Map creation:
+```kotlin
+val map = hashMapOf(1 to "one", 7 to "seven", 8 to "eight")
+```
+
+How to call functions more easily?
+Let's suppose we want to print the elements of a collections.
+Usually the procedure would be the following:
+```kotlin
+val list  = arrayListOf(1, 5, 7)
+println(list) // here .toString()
+```
+
+The output is always standard. What if we want to change it?
+
+In this case we need to specify a custom function to deal with it.
+For example:
+```kotlin
+fun <T> joinString(
+    collection: Collection<T>,
+    separator: String,
+    prefix: String,
+    postfix: String,
+){
+    val result = StringBuilder(prefix)
+    
+    for ((index, el) in collection){
+        if (index > 0 ) result.append(separator)
+        result.append(el)
+    }
+    
+    result.append(postfix)
+    return result.toString()
+}
+```
+The previous snippet of code creates a custom printing style.
+
+But it could be hard to read and understand the function
+when it's called.
+So the solution are:
+- named argument.
+- default parameter values. 
+
+#### Tip and tricks to organize functions
+In Kotlin it is not necessary that the functions belong to a class.
+It is possible to declare them at the beginning of the file.
+
+For example, file _join.kt_ contains after the package declaration 
+the list of functions:
+```kotlin
+package strings
+
+fun joinToString(): String {}
+```
+
+If we use only Kotlin, this is all. In case of interaction with Java,
+we need to understand the corresponding matching:
+
+```java
+/*Java*/
+package strings;
+
+public class JoinKt {
+    public static String joinToString(...) {...}
+}
+```
+
+All the functions declared at the beginning of the file in Kotlin 
+are mapped to static methods belonging to the class with name 
+equal to file's name. Then, we can directly access them as static 
+methods.
+
+In the same way, **properties** will be accessed as global variables:
+val as read-only, var as a modifiable variable.
+
+
+### Extension functions and properties
+To extend the classes already defined by other developers, Kotlin provides
+the possibility to write extension functions. 
+
+The idea is to write in the current file,utility functions
+ to a class without accessing the source file of the class itself.
+This is very flexible.
+For example:
+```kotlin
+package strings
+
+fun String.lastChar(): Char = this.get(this.length - 1)
+``` 
+
+In the previous snippet of code, String is the class we want to extend,
+while this is the object the function will be called on. Even if the
+function is implemented in the current file, it is necessay to 
+import it in order to use it.
+
+String is called the **receiver type** and 'this' is called the 
+**receiver object**. 
+
+So for example, this extension functions are used to provide utilities:
+
+```kotlin
+fun <T> Collection<T>.joinToString(
+    separator: String,
+    prefix:String,
+    postfix: String
+): String {
+    val result = StringBuilder(prefix)
+    for ((index, element) in this.withIndex())
+    if (index > 0) result.append(separator)
+    result.append(element)
+    }
+    result.append(postfix)
+    return result.toString()
+}
+```
+
+This can be used somewhere else in the code as:
+```kotlin
+val list = listOf(1, 3, 5)
+println(list.joinToString(";", "(", ")"))
+```
+
+### Function override
+```kotlin
+open class View {
+open fun click() = println("View clicked")
+}
+
+class Button: View() {
+override fun click() = println("Button clicked")
+}
+```
+
+Button extends View. This is how to override _click_ function.
+
+Now let's suppose we:
+```kotlin
+val a: View = Button()
+a.click() // "Button clicked"
+```
+Here the method of the sub-class is called. 
+If we do the same, but the overridden function is an extension function,
+the function that will be called is the one of View, consequently 
+displaying "View clicked".
+
+
+
+
+
+
+
+
 
 
 
