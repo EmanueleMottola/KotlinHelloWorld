@@ -261,8 +261,8 @@ if (e is Int) {
     println ( e.value ) // here e is of type Int
 }
 ```
-Consequently no explicit cast is necessary, and the variable is
-smatly casted to the required type.
+Consequently, no explicit cast is necessary, and the variable is
+easily casted to the required type.
 
 Condition when this is possible:
  - the variable is declared as _val_ i.e. read-only.
@@ -272,6 +272,66 @@ and consequently we need:
 ```kotlin
 val n = e as Int
 ```
+
+### Loops and Ranges
+
+Kotlin does not provide normal for loop like in Java. The classic
+syntax is 
+```kotlin
+for (book in books){
+    // do something
+}
+```
+In the previous snippet of code, the for-each loop is used.
+This is mainly used to iterate over collections.
+
+Kotlin provides also a _while_ loop, identical to Java.
+
+Anyway, to emulate the C style for loop, it provides the **range** 
+element. A range is an interval between two values, using the _.._ operator.
+For example:
+```kotlin
+for (i in 1..100){
+    // do something with i
+}
+```
+_Note_: in the previous code snippet, the values 1 and 100 are included, 
+so the range is _closed_. This synta also works for characters not
+only with integers.
+
+In case a range going 'backward', the _downTo_ keyword comes into play.
+When it is necessary to create a range where the step is not + or - 1,
+the keyword _step_ has to be used.
+Example:
+```kotlin
+for (i in 100 downTo 1 step 4){
+    // do something with i
+}
+```
+
+The _in_ keyword checks whether an element belongs to a collection
+or not. For example:
+
+```kotlin
+fun isLetter(a: Char) = a in 'a'..'z' || a in 'A'..'Z'
+fun isDigit(n: Int) = n !in 0..9
+```
+
+_Note_: This operator can be used with any object created out of a class
+implementing the _java.lang.Comparable_ interface.
+
+### Exceptions
+
+Exceptions are handled in a very similar way to Java. 
+It is not possible to insert the _throws_ keyword after the functions declaration.
+The tip to handle this is to use documentation. In case you want to use _try with resources_
+it is necessary to use the _try_ version that uses brackets: in this
+case the expression can return automatically a value.
+No other difference from Java.
+
+
+
+
 
 
 
