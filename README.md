@@ -487,6 +487,206 @@ If we do the same, but the overridden function is an extension function,
 the function that will be called is the one of View, consequently 
 displaying "View clicked".
 
+#### Varargs
+It is possible to use varargs in Kotlin. To do it:
+- put the keyword _vararg_ before the name of the parameter.
+- use the spread operator * before the parameter when passing it
+as argument calling the function.
+
+For example:
+```kotlin
+fun printList<T>(vararg values: T){
+    for (value in values)
+        println(value)
+}
+```
+
+where vararg has been used. Moreover, to call it:
+```kotlin
+val list = listOf(1, 3, 5)
+printList(*list)
+```
+
+### Nested functions
+In order to improve readability, Kotlin allows developers to write functions
+inside other functions.
+For example:
+```kotlin
+class User(val id: Int, val name: String, val address: String)
+fun saveUser(user: User) {
+    if (user.name.isEmpty()) {
+        throw IllegalArgumentException(
+            "Can't save user ${user.id}: empty Name")
+    }
+    if (user.address.isEmpty()) {
+        throw IllegalArgumentException(
+        "Can't save user ${user.id}: empty Address")
+    }
+    // Save user to the database
+}
+```
+
+You can see the block of code for the check is essentially repeated.
+
+To improve it, you can do:
+```kotlin
+fun saveUser(user: User) {
+    fun validate(value: String, fieldName: String) {
+        if (value.isEmpty()) {
+            throw IllegalArgumentException(
+            "Can't save user ${user.id}: " +
+            "empty $fieldName")
+        }
+    }
+    validate(user.name, "Name")
+    validate(user.address, "Address")
+// Save user to the database
+}
+```
+
+And even further, making the _saveUser()_ function as an extension function.
+Hence becoming _fun User.validateBeforeSave()_.
+
+As a consequence:
+- Logic is not duplicated
+- Inner class can access any member of the nesting class.
+
+
+## Interfaces
+
+Interfaces can contain:
+- definition of abstract methods
+- implementations of non-abstract methods
+- cannot contain states.
+- interfaces do not use _open_, _final_ or _abstract_.
+
+```kotlin
+interface Drawable(){
+    fun draw() // abstract method
+    fun showOff() = println("I am drawable!") // non-abstract method with defaut implementation
+}
+```
+
+To implement the interface:
+```kotlin
+class Image : Drawable {
+    override fun draw() = println("I was drawn!")
+}
+```
+
+_Note_: A class can implement as many interfaces as wanted, but only
+one class.
+
+There is no need to mark a default function with the default keyword.
+
+Let's suppose there is another interface:
+
+```kotlin
+interface Pushable(){
+    fun showOff() = println("I am pushable")
+}
+```
+
+When you implement both the interfaces:
+```kotlin
+class Image: Drawable, Pushable{
+    override fun showOff(){
+        super<Drawable>.showOff()
+        super<Pushable>.showOff()
+    }
+}
+```
+
+### The fragile base class problem
+When a class is extended by others, it is possible that a modification in
+the behavior of the base one can affect the others. In this terms,
+it is necessary to provide a solution:
+
+- document which methods and classes can be extended and overridden.
+- prohibit inheritance when you don't want it to happen.
+
+For this reasons, Kotlin declares automatically all the classes as
+**final** by default.
+
+If you want to allow the creation of subclasses, use 
+**open** modifier to every property which can be overridded.
+
+For example:
+```kotlin
+open class RichImage : Drawable {
+    fun cancel() {} // final by default, can't override
+    open fun animate() {} // can be overridden, it's open
+    override fun draw() {} // can be further overridden, it's open by default
+}
+```
+
+With the open modifier in the example above we can extend the class,
+override _animate()_ and also we can override _draw()_, since the 
+override modifier makes the field _open_ by default.
+
+Consequently if we don't want it to be overridden further, 
+we need to declare it as _final_.
+
+```kotlin
+open class RichImage : Drawable {
+    fun cancel() {} // final by default, can't override
+    open fun animate() {} // can be overridden, it's open
+    final override fun draw() {} // can't be further overridden, it's final
+}
+```
+
+##### Abstract modifier
+
+When declaring a class as **abstract**:
+- you can't instantiate it
+
+When applied to members:
+- they have to be overridden
+
+To conclude, the modifiers mean:
+- **final**: can't be overridden, used by default in class members.
+- **open**: can be overridden, explicitly specified.
+- **abstract**: must be overridden, can be used only in abstract classes, abstract members do not need to have an implementation.
+
+
+##### Visibility modifiers
+
+Kotlin uses public by default. The other modifiers are the same as
+in Java: public, protected and private.
+Moreover, _internal_ is a modifier that allows the data to be visible inside
+the module. 
+_private_ fields are visible only inside the file where they are defined.
+
+### Nested and Inner classes
+
+In Java **nested** classes are classes that are defined inside another class.
+The purpose of a nested class is to clearly group the nested 
+class with its surrounding class, signaling that these two 
+classes are to be used together. Or perhaps that the nested
+class is only to be used from inside its enclosing (owning) class.
+
+**Inner** classes are nested classes that store a reference to the outer
+class. Nested classes which are not inner, do not store a reference to outer data.
+
+For example:
+```kotlin
+class Button : View {
+    override fun getCurrentState(): State = ButtonState()
+    override fun restoreState(state: State) { /*...*/ }
+    class ButtonState : State { /*...*/ } // static nested class, does not refer to outer class data
+}
+```
+
+To declare a nested class as Inner, we need to use the _inner_ modifier:
+```kotlin
+class Outer {
+    inner class Inner {
+        fun getOuterReference(): Outer = this@Outer
+    }
+}
+```
+
+
 
 
 
