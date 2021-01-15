@@ -686,11 +686,225 @@ class Outer {
 }
 ```
 
+#### Sealed classes
+Sealed classes are implemented when you want to create a fixed bunch 
+of classes that extend the base class, and no more.
+In this case the base class is declared as **sealed**, and the extending 
+classes are directly declared within the class itself.
+
+For example:
+```kotlin
+sealed class Expr {
+    class Num(val value: Int) : Expr()
+    class Sum(val left: Expr, val right: Expr) : Expr()
+}
+```
+
+In this case, you can't create further classes out of that base one.
+
+### Class constructors and initializer blocks
+
+Class constructors, different ways to write the same thing:
+```kotlin
+class User(val nickname: String)
+
+class User constructor(_nickname: String) {
+    val nickname: String
+    init {
+        nickname = _nickname
+    }
+}
+
+class User(_nickname: String) {
+val nickname = _nickname
+}
+```
+
+In the previous code snippet, they all do the same.
+
+Default values can also be inserted, like:
+```kotlin
+class User( val nickname: String,
+            val isSubscribed: Boolean = true)
+```
+TIP: In this case, you need to use the default values instead of secondary
+constructors.
+In case the class is an extension of another one, we need to
+provide the parameters of the base class, too.
+```kotlin
+class TwitterUser(nickname: String) : User(nickname) { ... }
+```
+_Note_: there is a basic difference with the interfaces. Interfaces
+do not have constructors.
+
+Now, let's focus on secondary constructors. The followin snippet
+of code, does not declare a primary constrcutor, and you can say that, since 
+there is no parenthesis after the class declaration.
+Consequently, there is only the secondary constructor in place: 
+```kotlin
+open class View {
+    constructor(ctx: Context) {
+        // some code
+    }
+    constructor(ctx: Context, attr: AttributeSet) {
+        // some code
+    }
+}
+```
+
+To extend this class:
+```kotlin
+class MyButton : View {
+    constructor(ctx: Context)
+        : super(ctx) {
+        // ...
+    }
+    constructor(ctx: Context, attr: AttributeSet)
+        : super(ctx, attr) {
+        // ...
+    }
+}
+```
+
+In the previous snippet, we need to use super to execute also the
+constructors coming from the base class.
 
 
+##### Implementing propertiesdeclared in interfaces
+Interfaces can contain abstract properties declarations:
+```kotlin
+interface User {
+    val nickname: String //abstract property declaration
+}
+```
+
+Classes implementing _User_, how can they provide a way to obtain
+the value of _nickname_?
+Keep in mind that the interface cannot store any value in the
+state. Anyway, there are three ways:
+
+```kotlin
+// primary constructor implements the nickname property, 
+// where the state is stored, hence marked as override
+class PrivateUser(override val nickname: String) : User
+
+// it does not have a backing field. It invokes the getter every
+// time the field is required
+class SubscribingUser(val email: String) : User {
+    override val nickname: String
+        get() = email.substringBefore('@') )
+    }
+
+// it has a backing field. The function is invoked only once and
+// the value is stored in there.
+class FacebookUser(val accountId: Int) : User {
+    override val nickname = getFacebookName(accountId)
+}
+```
+
+Other alternative, is to implement with a custom getter directly in
+the interface: this is the behavior of the second case.
+
+And consequently:
+```kotlin
+interface User {
+    val email: String
+    val nickname: String
+        get() = email.substringBefore('@')
+}
+```
+
+The first property must be overridden in the implementing class,
+the second does not need it.
+
+It is possible to implement a logic every time that a field is implemented,
+for example:
+
+```kotlin
+class User(val name: String) {
+    var address: String = "unspecified"
+        set(value: String) {
+            println("""
+                Address was changed for $name:
+                "$field" -> "$value".""".trimIndent())
+                field = value
+        }
+}
+```
+
+_field_ is used to update the _val address_. It is a reference to the
+property.
 
 
+### Data classes
 
+Review of _Universal object methods_:
+- toString(): string representation of the object.
+- equals(): method to state whether two objects are equal. You can call it using '=='
+- hashCode(): computes the hashCode of the object. 
+For using objects as keys in hash-based containers such as HashMap
+
+Data classes implement them automatically.
+
+Moreover:
+- provides _copy()_ method to copy an object, encouraging the usage of immutables.
+
+
+### Class delegation
+Problem: projects grow and base classes are modified, affecting the 
+child-classes, too.
+Usually the _Decorator_ pattern is used: the extending class includes
+an instance of the base class to exploit its functionalities.
+
+For example:
+```kotlin
+class DelegatingCollection<T> : Collection<T> {
+    private val innerList = arrayListOf<T>()
+    override val size: Int get() = innerList.size
+    override fun isEmpty(): Boolean = innerList.isEmpty()
+    override fun contains(element: T): Boolean = innerList.contains(element)
+    override fun iterator(): Iterator<T> = innerList.iterator()
+    override fun containsAll(elements: Collection<T>): Boolean =
+    innerList.containsAll(elements)
+}
+```
+
+But Kotlin can write all this code automatically, introducing the
+**class delegation**.
+Consequently, the same can be done simply writing:
+```kotlin
+class DelegatingCollection<T>(
+    innerList: Collection<T> = ArrayList<T>()
+) : Collection<T> by innerList {}
+```
+
+In case we want to add functionalities to the new class:
+```kotlin
+class CountingSet<T>(
+    val innerSet: MutableCollection<T> = HashSet<T>()
+    ) : MutableCollection<T> by innerSet {
+    
+    var objectsAdded = 0
+    
+    override fun add(element: T): Boolean {
+        objectsAdded++
+        return innerSet.add(element)
+    }
+
+    override fun addAll(c: Collection<T>): Boolean {
+        objectsAdded += c.size
+        return innerSet.addAll(c)
+    }
+}
+```
+
+In the previous snippet of code, the methods are overridden, but actually
+exploiting the methods previously created by the base class. 
+The important part is that you aren’t introducing any dependency on how the
+underlying collection is implemented.
+
+
+### The 'object' keyword
 
 
 
